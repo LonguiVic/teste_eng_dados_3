@@ -1,3 +1,8 @@
+from pathlib import Path
+import sys
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
@@ -10,14 +15,10 @@ from pyspark.sql.types import (
 )
 from pyspark.sql.window import Window
 from datetime import datetime
-import logging
+from utils.utils import logs
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()]
-)
 
+logger = logs(__name__)
 
 class ETLClientes:
 
@@ -46,7 +47,7 @@ class ETLClientes:
         ])
 
     def read_csv(self, input_path):
-        logging.info(f"Lendo arquivo: {input_path}")
+        logger.info(f"Lendo arquivo: {input_path}")
 
         return (
             self.spark.read
@@ -56,7 +57,7 @@ class ETLClientes:
         )
 
     def process_bronze(self, df):
-        logging.info("Processando camada Bronze")
+        logger.info("Processando camada Bronze")
 
         return (
             df.withColumn(
@@ -74,7 +75,7 @@ class ETLClientes:
         )
 
     def process_silver(self, df_bronze):
-        logging.info("Processando camada Silver")
+        logger.info("Processando camada Silver")
 
         window_spec = (
             Window
@@ -112,7 +113,7 @@ class ETLClientes:
         table_name,
         partition_col
     ):
-        logging.info(f"Escrevendo tabela {table_name}")
+        logger.info(f"Escrevendo tabela {table_name}")
 
         (
             df.write
@@ -153,6 +154,11 @@ class ETLClientes:
             partition_col="anomesdia"
         )
 
+        # df_bronze.write \
+        #     .mode("overwrite") \
+        #     .partitionBy("anomesdia") \
+        #     .parquet("datasets/tabela_cliente_landing")
+
         df_silver = self.process_silver(df_bronze)
 
         self.write_and_update_catalog(
@@ -163,6 +169,12 @@ class ETLClientes:
             partition_col="anomesdia"
         )
 
+        # df_silver.write \
+        #     .mode("overwrite") \
+        #     .partitionBy("anomesdia") \
+        #     .parquet("datasets/tb_cliente")
+
+
     def stop(self):
         self.spark.stop()
 
@@ -171,11 +183,18 @@ if __name__ == "__main__":
 
     etl = ETLClientes()
 
-    etl.run(
-        input_path="datasets/clientes_sinteticos.csv",
-        bronze_path="s3://bucket-bronze/tabela_cliente_landing",
-        silver_path="s3://bucket-silver/tb_cliente",
-        database_name="default"
-    )
+    try:
+        etl.run(
+            input_path="datasets/clientes_sinteticos.csv",
+            bronze_path="s3://bucket-bronze/tabela_cliente_landing",
+            silver_path="s3://bucket-silver/tb_cliente",
+            database_name="default"
+        )
 
-    etl.stop()
+    except Exception as e:
+        logger.error(f"Falha durante execução da ETL: {e}")
+        raise
+        # Aqui eu colocaria um monitoramento de incidentes tipo PagerDuty ou VictorOps
+
+    finally:
+        etl.stop()
