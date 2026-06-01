@@ -121,7 +121,7 @@ if __name__ == "__main__":
             "datasets/tb_cliente"
         )
     except Exception as e:
-        logger.info(f"Falha ao executar o Data Quality: {e}")
+        logger.error(f"Falha ao executar o Data Quality: {e}")
         raise
         # Aqui eu colocaria um monitoramento de incidentes tipo PagerDuty ou VictorOps
 
