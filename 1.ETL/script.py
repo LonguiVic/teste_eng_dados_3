@@ -132,12 +132,6 @@ class ETLClientes:
         partition_value = datetime.now().strftime("%Y%m%d")
 
         # Partição Lógica
-        bucket = path.replace("s3://", "").split("/")[0]
-
-        prefix = "/".join(
-            path.replace("s3://", "").split("/")[1:]
-        )
-
         try:
             self.glue.create_partition(
                 DatabaseName=database,
@@ -146,8 +140,7 @@ class ETLClientes:
                     "Values": [partition_value],
                     "StorageDescriptor": {
                         "Location": (
-                            f"s3://{bucket}/"
-                            f"{prefix}/"
+                            f"{path}/"
                             f"{partition_col}={partition_value}/"
                         )
                     }
