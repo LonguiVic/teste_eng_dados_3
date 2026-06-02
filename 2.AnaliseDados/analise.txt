@@ -3,11 +3,11 @@ ANÁLISE DOS DADOS
 
 1. TOP 5 CLIENTES COM MAIS ATUALIZAÇÕES
 
-Cliente: 878 - Atualizações: 5
-Cliente: 479 - Atualizações: 5
 Cliente: 396 - Atualizações: 5
+Cliente: 479 - Atualizações: 5
+Cliente: 878 - Atualizações: 5
 Cliente: 855 - Atualizações: 4
-Cliente: 980 - Atualizações: 3
+Cliente: 71 - Atualizações: 3
 
 2. MÉDIA DE IDADE DOS CLIENTES
 

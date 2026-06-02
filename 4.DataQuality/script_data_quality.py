@@ -125,11 +125,13 @@ if __name__ == "__main__":
         raise
         # Aqui eu colocaria um monitoramento de incidentes tipo PagerDuty ou VictorOps
 
-    # Se eu estivesse num ambiente de produção, provavelmente escolheria o AWS Glue Data Quality
-    # para fazer a validação dos dados
+"""
+    Se eu estivesse num ambiente de produção, provavelmente escolheria o AWS Glue Data Quality
+    para fazer a validação dos dados
 
-    # Valores validados:
-    # Valores nulos
-    # Duplicidade
-    # Formatação correta
-    # Valores fixos esperados
+    Valores validados:
+    Valores nulos
+    Duplicidade
+    Formatação correta
+    Valores fixos esperados 
+"""

@@ -44,6 +44,7 @@ resource "aws_iam_role" "glue_role" {
 }
 
 # Anexa a policy gerenciada da AWS necessária para execução de Glue Jobs
+# https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWSGlueServiceRole.html
 resource "aws_iam_role_policy_attachment" "glue_service_role" {
 
   role = aws_iam_role.glue_role.name

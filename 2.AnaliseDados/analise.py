@@ -27,7 +27,7 @@ class AnaliseClientes:
             df_bronze
             .groupBy("cod_cliente")
             .count()
-            .orderBy(F.desc("count"))
+            .orderBy(F.desc("count"), F.asc("cod_cliente"))
             .limit(5)
         )
 

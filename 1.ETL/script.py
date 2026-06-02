@@ -11,7 +11,8 @@ from pyspark.sql.types import (
     StringType,
     DoubleType,
     TimestampType,
-    DateType
+    DateType,
+    LongType
 )
 from pyspark.sql.window import Window
 from datetime import datetime
@@ -33,16 +34,16 @@ class ETLClientes:
 
     def _get_cliente_schema(self):
         return StructType([
-            StructField("cod_cliente", StringType(), True),
-            StructField("nm_cliente", StringType(), True),
+            StructField("cod_cliente", LongType(), False),
+            StructField("nm_cliente", StringType(), False),
             StructField("nm_pais_cliente", StringType(), True),
             StructField("nm_cidade_cliente", StringType(), True),
             StructField("nm_rua_cliente", StringType(), True),
             StructField("num_casa_cliente", StringType(), True),
             StructField("telefone_cliente", StringType(), True),
             StructField("dt_nascimento_cliente", DateType(), True),
-            StructField("dt_atualizacao", TimestampType(), True),
-            StructField("tp_pessoa", StringType(), True),
+            StructField("dt_atualizacao", TimestampType(), False),
+            StructField("tp_pessoa", StringType(), False),
             StructField("vl_renda", DoubleType(), True)
         ])
 
@@ -115,6 +116,7 @@ class ETLClientes:
     ):
         logger.info(f"Escrevendo tabela {table_name}")
 
+        # Partição Física
         (
             df.write
             .mode("append")
@@ -125,6 +127,7 @@ class ETLClientes:
 
         partition_value = datetime.now().strftime("%Y%m%d")
 
+        # Partição Lógica
         alter_query = f"""
         ALTER TABLE {database}.{table_name}
         ADD IF NOT EXISTS PARTITION
@@ -154,10 +157,10 @@ class ETLClientes:
             partition_col="anomesdia"
         )
 
-        # df_bronze.write \
-        #     .mode("overwrite") \
-        #     .partitionBy("anomesdia") \
-        #     .parquet("datasets/tabela_cliente_landing")
+        df_bronze.write \
+            .mode("overwrite") \
+            .partitionBy("anomesdia") \
+            .parquet("datasets/tabela_cliente_landing")
 
         df_silver = self.process_silver(df_bronze)
 
@@ -169,10 +172,10 @@ class ETLClientes:
             partition_col="anomesdia"
         )
 
-        # df_silver.write \
-        #     .mode("overwrite") \
-        #     .partitionBy("anomesdia") \
-        #     .parquet("datasets/tb_cliente")
+        df_silver.write \
+            .mode("overwrite") \
+            .partitionBy("anomesdia") \
+            .parquet("datasets/tb_cliente")
 
 
     def stop(self):
