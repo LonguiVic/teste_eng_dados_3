@@ -16,6 +16,8 @@ from pyspark.sql.types import (
 )
 from pyspark.sql.window import Window
 from datetime import datetime
+import boto3
+from botocore.exceptions import ClientError
 from utils.utils import logs
 
 
@@ -27,9 +29,11 @@ class ETLClientes:
         self.spark = (
             SparkSession.builder
             .appName(app_name)
+            .enableHiveSupport()
             .getOrCreate()
         )
 
+        self.glue = boto3.client("glue")
         self.schema = self._get_cliente_schema()
 
     def _get_cliente_schema(self):
@@ -128,15 +132,35 @@ class ETLClientes:
         partition_value = datetime.now().strftime("%Y%m%d")
 
         # Partição Lógica
-        alter_query = f"""
-        ALTER TABLE {database}.{table_name}
-        ADD IF NOT EXISTS PARTITION
-        ({partition_col}='{partition_value}')
-        LOCATION
-        '{path}/{partition_col}={partition_value}/'
-        """
+        bucket = path.replace("s3://", "").split("/")[0]
 
-        self.spark.sql(alter_query)
+        prefix = "/".join(
+            path.replace("s3://", "").split("/")[1:]
+        )
+
+        try:
+            self.glue.create_partition(
+                DatabaseName=database,
+                TableName=table_name,
+                PartitionInput={
+                    "Values": [partition_value],
+                    "StorageDescriptor": {
+                        "Location": (
+                            f"s3://{bucket}/"
+                            f"{prefix}/"
+                            f"{partition_col}={partition_value}/"
+                        )
+                    }
+                }
+            )
+        except ClientError as e:
+
+            if e.response["Error"]["Code"] == "AlreadyExistsException":
+                logger.warning(
+                    f"Partição {partition_value} já existe na tabela {table_name}"
+                )
+            else:
+                raise
 
     def run(
         self,
