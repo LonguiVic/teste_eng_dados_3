@@ -174,10 +174,10 @@ class ETLClientes:
             partition_col="anomesdia"
         )
 
-        df_bronze.write \
-            .mode("overwrite") \
-            .partitionBy("anomesdia") \
-            .parquet("datasets/tabela_cliente_landing")
+        # df_bronze.write \
+        #     .mode("overwrite") \
+        #     .partitionBy("anomesdia") \
+        #     .parquet("datasets/tabela_cliente_landing")
 
         df_silver = self.process_silver(df_bronze)
 
@@ -189,10 +189,10 @@ class ETLClientes:
             partition_col="anomesdia"
         )
 
-        df_silver.write \
-            .mode("overwrite") \
-            .partitionBy("anomesdia") \
-            .parquet("datasets/tb_cliente")
+        # df_silver.write \
+        #     .mode("overwrite") \
+        #     .partitionBy("anomesdia") \
+        #     .parquet("datasets/tb_cliente")
 
 
     def stop(self):

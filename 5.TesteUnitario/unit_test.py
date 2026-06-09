@@ -13,6 +13,9 @@ import pytest
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
+from unittest.mock import MagicMock
+from unittest.mock import patch
+
 from script import ETLClientes
 
 from utils.utils import logs
@@ -38,7 +41,12 @@ def spark():
 @pytest.fixture
 def etl():
 
-    return ETLClientes()
+    with patch(
+        "script.boto3.client",
+        return_value=MagicMock()
+    ):
+
+        yield ETLClientes()
 
 
 # 1. Happy path
